@@ -13,30 +13,24 @@ export function createProject(data) {
 }
 
 /**
- * 获取数据总数
+ * 获取信息
+ * @param {*} params 
  */
-export function getTotalCount() {
+export function getMessage(params) {
     return request({
-        url: '/api/project/getTotalCount',
-        method: 'get'
+        url: '/api/project/getMessage',
+        method: 'get',
+        params
     })
 }
 
 /**
- * 获取信息
- * @param {*} data 
+ * 删除项目
  */
-export function getMessage(data) {
-    return request({
-        url: '/api/project/getMessage',
-        method: 'get',
-        data
-    })
-}
-
-export function deleteProject() {
+export function deleteProject(data) {
     return request({
         url: '/api/project/deleteProject',
-        method: 'delete'
+        method: 'delete',
+        data
     })
 }

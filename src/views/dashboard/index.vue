@@ -1,7 +1,6 @@
 <template>
   <div class="dashboard-container">
     <!-- <div class="dashboard-text">name: {{ this.user.username }}</div> -->
-    <el-button @click="getUserInfo">test</el-button>
   </div>
 </template>
 
@@ -19,14 +18,6 @@ export default {
     }
   },
   methods: {
-    /**
-     * 从session中获取用户信息
-     */
-    getUserInfo() {
-      // let user = this.$store.user.getInfo();
-      // console.log(user);
-      // this.user = JSON.parse(window.sessionStorage.getItem('user'));
-    }
   },
   created() {
     // this.getUserInfo();
