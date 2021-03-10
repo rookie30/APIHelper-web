@@ -1,3 +1,4 @@
+<!-- 项目管理 -->
 <template>
     <div class="project-container">
         <div class="function-bar">
@@ -5,7 +6,8 @@
             <ProjectAddForm 
                 :visible="dialogVisible"
                 @handleCancel="handleCancel"
-                @handleConfirm="handleConfirm"></ProjectAddForm>
+                @handleConfirm="handleConfirm">
+            </ProjectAddForm>
             <el-input 
                 v-model="pageData.searchCont" 
                 placeholder="请输入搜索内容" 
@@ -20,9 +22,11 @@
                 stripe
                 class="project-table"
                 :header-cell-style="{ textAlign: 'center' }"
-                :cell-style="{ textAlign: 'center' }">
+                :cell-style="{ textAlign: 'center' }"
+                v-loading="isLoading">
                 <el-table-column
                     type="index"
+                    :index="handelIndex"
                     label="id">
                 </el-table-column>
                 <el-table-column
@@ -67,13 +71,21 @@
                             circle 
                             icon="el-icon-document-copy" 
                             size="mini"
-                            @click="handelEdit(scope.row)"></el-button>
+                            @click="handelEdit(scope.row)">
+                        </el-button>
+                        <el-button
+                            circle
+                            icon="el-icon-date"
+                            size="mini"
+                            @click="checkLog(scope.row)">
+                        </el-button>
                         <el-button 
                             circle 
                             icon="el-icon-delete" 
                             size="mini" 
                             style="color:red;"
-                            @click="handelDelete(scope.$index, scope.row)"></el-button>
+                            @click="handelDelete(scope.$index, scope.row)">
+                        </el-button>
                     </template>
                 </el-table-column>
             </el-table>
@@ -82,7 +94,9 @@
             <el-pagination
                 :current-page.sync="pageData.currentPage"
                 :page-size="pageData.size"
-                layout="prev, pager, next, jumper"
+                layout="sizes, prev, pager, next, jumper"
+                :page-sizes="[7, 11]"
+                @size-change="handelSizeChange"
                 @current-change="handleCurrentChange"
                 :total="pageData.total">
             </el-pagination>
@@ -104,11 +118,12 @@ export default {
             tableData: [],
             pageData: {
                 currentPage: 1, // 当前页
-                size: 11, // 每页数据量
+                size: 7, // 每页数据量
                 total: 0,
                 searchCont: '',
             },
             dialogVisible: false,
+            isLoading: false,
         }
     },
     methods: {
@@ -118,6 +133,13 @@ export default {
         handleConfirm() {
             this.init();
             this.dialogVisible = false;
+        },
+        handelSizeChange(val) {
+            this.pageData.size = val;
+            this.init();
+        },
+        handelIndex(index) {
+            return index + this.pageData.size * (this.pageData.currentPage - 1) + 1;
         },
         getInfo() {
             return new Promise((resolve, reject) => {
@@ -132,6 +154,7 @@ export default {
             });
         },
         init() {
+            this.isLoading = true;
             const infoPromise = this.getInfo();
             infoPromise.then(res => {
                 // console.log(res);
@@ -147,7 +170,9 @@ export default {
             }).catch(err => {
                 console.log(err);
                 this.$message.error('初始化失败');
-            })
+            }).finally(() => {
+                this.isLoading = false;
+            });
         },
         /**
          * 删除项目
@@ -215,7 +240,12 @@ export default {
             })
         },
         handelEdit(row) {
-            this.$router.push({path: '/project/edit', query: {info: row}});
+            const params = JSON.stringify(row);
+            this.$router.push({path: '/project/edit', query: {info: params}});
+        },
+        checkLog(row) {
+            const params = JSON.stringify(row);
+            this.$router.push({path: '/project/log', query: {info: params}});
         }
     },
     mounted() {

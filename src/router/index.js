@@ -83,10 +83,38 @@ export const constantRoutes = [
   },
 
   {
+    path: '/project/log',
+    name: 'ProjectLog',
+    component: () => import('@/views/project/projectLog'),
+    meta: { title: '项目日志' },
+    hidden: true
+  },
+
+  {
     path: '/personal',
     component: () => import('@/views/personalCenter/index'),
     meta: { title: '个人中心' },
     hidden: true
+  },
+
+  {
+    path: '/interface',
+    component: Layout,
+    redirect: '/interface/index',
+    meta: { title: '接口管理', icon: 'interfaceManage' },
+    children: [
+      {
+        path: 'index',
+        component: () => import('@/views/interface/interfaceConfig'),
+        meta: { title: '接口配置', icon: 'interfaceConfig' },
+      },
+      {
+        path: 'log',
+        name: 'Log',
+        component: () => import('@/views/interface/interfaceLog'),
+        meta: { title: '日志查询', icon: 'log' },
+      }
+    ]
   },
 
   // 404 page must be placed at the end !!!

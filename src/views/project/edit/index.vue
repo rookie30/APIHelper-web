@@ -1,6 +1,6 @@
 <!-- 项目信息管理 -->
 <template>
-    <div class="container">
+    <div class="container" v-loading="isLoading">
         <div class="manager-container">
             <!-- 项目信息管理 -->
             <el-card class="project-card">
@@ -13,12 +13,17 @@
                         编辑
                     </el-button>
                 </div>
-                <el-form label-position="right" label-width="80px" :model="projectData" ref="form">
-                    <el-form-item label="项目名称">
+                <el-form 
+                    label-position="right" 
+                    label-width="80px" 
+                    :model="projectData" 
+                    ref="groupInfoForm"
+                    :rules="groupRules">
+                    <el-form-item label="项目名称" prop="projectName">
                         <span v-show="!isEdit" class="editPart">{{ projectData.projectName }}</span>
                         <el-input v-show="isEdit" v-model="projectData.projectName" clearable></el-input>
                     </el-form-item>
-                    <el-form-item label="项目简介">
+                    <el-form-item label="项目简介" prop="introduce">
                         <div class="introducePart" v-show="!isEdit">
                             {{ projectData.introduce }}
                         </div>
@@ -43,43 +48,83 @@
                         <span class="updateTime">{{ projectData.updateTime }}</span>
                     </el-form-item>
                     <el-form-item v-show="isEdit" label-width="0">
-                        <el-button type="primary" style="margin-left:15px;">保存修改</el-button>
+                        <el-button 
+                            type="primary" 
+                            style="margin-left:15px;"
+                            @click="handelEdit()">
+                            保存修改
+                        </el-button>
                     </el-form-item>
                 </el-form>
             </el-card>
             <!-- 项目小组管理 -->
-            <el-card class="group-card">
-                <div slot="header">
-                    <span>项目小组管理</span>
-                    <el-button
-                        style="float:right;padding:3px 0;"
-                        type="text">
-                        创建小组
-                    </el-button>
-                </div>
-                <el-table :data="groupData">
-                    <el-table-column 
-                        prop="groupName"
-                        label="小组名称"
-                        width="150px">
-                    </el-table-column>
-                    <el-table-column
-                        prop="leader"
-                        label="组长"
-                        width="150px">
-                    </el-table-column>
-                    <el-table-column
-                        prop="member"
-                        label="项目组成员">
-                    </el-table-column>
-                </el-table>
+            <el-card class="group-card management-card"         v-show="managementChoose">
+                    <div slot="header">
+                        <span>项目小组管理</span>
+                        <el-button
+                            icon="el-icon-refresh"
+                            circle
+                            class="changeBtn"
+                            size="mini"
+                            @click="managementChoose=!managementChoose">
+                        </el-button>
+                        <el-button
+                            style="float:right;padding:3px 0;"
+                            type="text"
+                            @click="createFormVisible=true">
+                            创建小组
+                        </el-button>
+                    </div>
+                    <el-table :data="groupData" height="400">
+                        <el-table-column 
+                            prop="groupName"
+                            label="小组名称"
+                            width="150px">
+                        </el-table-column>
+                        <el-table-column
+                            prop="leader"
+                            label="组长"
+                            width="150px">
+                        </el-table-column>
+                        <el-table-column
+                            prop="member"
+                            label="项目组成员">
+                        </el-table-column>
+                        <el-table-column
+                            label="操作"
+                            width="100px"
+                            fixed="right">
+                            <el-button
+                                icon="el-icon-edit"
+                                circle
+                                size="mini">
+                            </el-button>
+                            <el-button 
+                                type="danger" 
+                                icon="el-icon-delete" 
+                                circle
+                                size="mini">
+                            </el-button>
+                        </el-table-column>
+                    </el-table>
+                    <CreateGroupForm
+                        :visible="createFormVisible"
+                        :projectId="projectData.id"
+                        @handelCancel="createCancel"
+                        @handelGroupCreated="createSucceed">
+                    </CreateGroupForm>
             </el-card>
-        </div>
-        <!-- 项目成员管理 -->
-        <div class="member-manager">
-            <el-card class="member-card">
+            <!-- 项目成员管理 -->
+            <el-card class="member-card management-card" v-show="!managementChoose">
                 <div slot="header">
                     <span>项目成员管理</span>
+                    <el-button
+                        icon="el-icon-refresh"
+                        circle
+                        class="changeBtn"
+                        size="mini"
+                        @click="managementChoose=!managementChoose">
+                    </el-button>
                     <el-button
                         style="float:right;padding:3px 0;"
                         type="text">
@@ -91,12 +136,12 @@
                     <el-table-column
                         prop="username"
                         label="账号"
-                        width="150px">
+                        width="100px">
                     </el-table-column>
                     <el-table-column
                         prop="nickname"
                         label="昵称"
-                        width="150px">
+                        width="100px">
                     </el-table-column>
                     <el-table-column
                         prop="email"
@@ -112,8 +157,14 @@
                     </el-table-column>
                     <el-table-column
                         label="操作"
-                        width="100px">
-                        <el-button type="danger" icon="el-icon-delete" circle></el-button>
+                        width="100px"
+                        fixed="right">
+                        <el-button 
+                            type="danger" 
+                            icon="el-icon-delete" 
+                            circle
+                            size="mini">
+                        </el-button>
                     </el-table-column>
                 </el-table>
             </el-card>
@@ -122,14 +173,38 @@
 </template>
 
 <script>
+import { getMemberInfo, getGroupInfo, updateProject } from '@/api/system/project';
+import CreateGroupForm from '@/components/projectManager/createGroupForm'; 
+
 export default {
     name: 'ProjectEdit',
+    components: {
+        CreateGroupForm,
+    },
     data() {
+        var checkName = (rule, projectName, callback) => {
+            if(!(/^[\u4e00-\u9fa5a-zA-Z0-9 ]{1,20}$/).test(projectName)) {
+                return callback(new Error('名称非法!'));
+            }
+            else {
+                callback();
+            }
+        };
         return {
             projectData: {},
             memberData: [],
             groupData: [],
             isEdit: false,
+            managementChoose: true, // 成员管理/项目管理切换
+            createFormVisible: false,
+            isLoading: false,
+            groupRules: {
+                projectName: [
+                    { trigger: 'blur', message: '项目名称不能为空' },
+                    { max: 20, trigger: 'blur', message: '名称长度应小于20个字符' },
+                    { validator: checkName, trigger: 'blur' }
+                ]
+            }
         }
     },
     methods: {
@@ -137,13 +212,93 @@ export default {
          * 从url中获取项目信息
          */
         getInfoFromQuery() {
-            this.projectData = this.$route.query.info;
-            console.log(this.projectData);
+            this.projectData = JSON.parse(this.$route.query.info);
+            // console.log(this.projectData);
+        },
+        /**
+         * 获取项目组成员信息
+         */
+        getMemberInformation() {
+            return new Promise((resolve, reject) => {
+                let params = { projectId: this.projectData.id };
+                getMemberInfo(params).then(res => {
+                    if(res.code == '200') {
+                        resolve(res);
+                    }
+                    else {
+                        reject("获取成员信息失败");
+                    }
+                });
+            });
+        },
+        /**
+         * 获取项目组信息
+         */
+        getGroupInformation() {
+            return new Promise((resolve, reject) => {
+                let params = { projectId: this.projectData.id };
+                getGroupInfo(params).then(res => {
+                    if(res.code == '200') {
+                        resolve(res);
+                    }
+                    else {
+                        reject("获取项目组信息失败");
+                    }
+                });
+            });
+        },
+        init() {
+            this.isLoading = true;
+            const groupPromise = this.getGroupInformation();
+            // memberPromise.then(res => {
+            //     console.log(res);
+            // }).catch(err => {
+            //     console.log(err);
+            // });
+            groupPromise.then(res => {
+                // console.log(res);
+                this.groupData = res.groups;
+            }).catch(err => {
+                console.log(err);
+            }).finally(() => {
+                this.isLoading = false;
+            });
+        },
+        createCancel() {
+            this.createFormVisible = false;
+        },
+        /**
+         * 创建小组成功
+         */
+        createSucceed() {
+            this.createFormVisible = false;
+            this.init();
+        },
+        /**
+         * 修改项目信息
+         */
+        handelEdit() {
+            updateProject(this.projectData).then(res => {
+                console.log(res);
+                if(res.code == "200") {
+                    this.$message.success("修改成功");
+                    setTimeout(() => {
+                        this.init();    
+                    }, 1000);
+                }
+                else {
+                    throw new Error("修改失败");
+                }
+            }).catch(err => {
+                console.log(err);
+                this.$message.error(err);
+            });
         }
     },
     created() {
         this.getInfoFromQuery();
-    }
+        this.init();
+    },
 }
 </script>
 
@@ -154,7 +309,8 @@ export default {
     }
     .project-card {
         width: 40%;
-        height: 400px;
+        height: 100%;
+        max-height: 500px;
         margin: 15px 10px;
     }
     .editPart {
@@ -172,19 +328,30 @@ export default {
         font-size: 14px;
         font-family: sans-serif;
     }
-    .group-card {
+    /* .group-card {
         width: 60%;
-        height: 400px;
+        height: 100%;
+        max-height: 500px;
         margin: 15px 10px;
-    }
+    } */
     .member-manager {
         display: flex;
 
     }
-    .member-card {
+    /* .member-card {
         width: 100%;
         height: 40%;
         margin: 10px 10px;
+    } */
+    .management-card {
+        width: 60%;
+        height: 100%;
+        max-height: 500px;
+        margin: 15px 10px;
+    }
+    .changeBtn {
+        float: right;
+        margin-left: 15px;
     }
 
 </style>

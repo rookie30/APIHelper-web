@@ -1,3 +1,4 @@
+<!-- 项目创建表单组件 -->
 <template>
     <el-dialog 
         title="创建项目" 
@@ -92,10 +93,10 @@ export default {
                                 this.$emit('handleConfirm');
                             }, 1000);
                         }
-                        this.isLoading = false;
                     }).catch(err => {
                         // console.log(err);
                         this.$message.error("创建失败");
+                    }).finally(() => {
                         this.isLoading = false;
                     });
                 }
