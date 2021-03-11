@@ -1,3 +1,4 @@
+<!-- 项目日志 -->
 <template>
     <div class="container">
         <div class="header">
@@ -7,11 +8,11 @@
         <div class="body" v-loading="isLoading">
             <div>
                 <el-timeline 
-                    v-for="item in logData"
-                    :key="item.id">
+                    v-for="(item, index) in logData"
+                    :key="index">
                     <el-timeline-item 
-                        :type="'info' | typeFilter(item.type)"
-                        :timestamp="item.recordTime" 
+                        :type="item.type | typeFilter"
+                        :timestamp="item.recordTime"
                         placement="top"
                         class="log-item">
                         <el-card>
@@ -53,11 +54,14 @@ export default {
         goBack() {
             this.$router.back(-1);
         },
+        /**
+         * 获取日志信息
+         */
         getLog() {
             return new Promise((resolve, reject) => {
                 const params = { projectId: this.projectData.id };
                 getProjectLog(params).then(res => {
-                    console.log(res);
+                    // console.log(res);
                     if(res.code == '200') {
                         resolve(res);
                     }
@@ -71,8 +75,13 @@ export default {
             this.isLoading = true;
             const logPromise = this.getLog();
             logPromise.then(res =>{
-                console.log(res);
-                this.logData = res.logs;
+                // console.log(res);
+                // 将日志根据记录时间倒叙排序
+                let logs = res.logs.sort((a, b) => {
+                    return a.recordTime > b.recordTime ? -1 : 1;
+                })
+                this.logData = logs;
+                // 切割日志内容
                 this.splitTitle();
             }).catch(err => {
                 console.log(err);
@@ -89,7 +98,7 @@ export default {
                         item.content.split(' ')[4];
                 item.title = title;
             });
-        }
+        },
         
     },
     created() {

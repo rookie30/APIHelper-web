@@ -278,12 +278,15 @@ export default {
          * 修改项目信息
          */
         handelEdit() {
+            this.isLoading = true;
             updateProject(this.projectData).then(res => {
                 console.log(res);
                 if(res.code == "200") {
                     this.$message.success("修改成功");
                     setTimeout(() => {
-                        this.init();    
+                        const params = JSON.stringify(this.projectData);
+                        this.$router.push({path: '/project/edit', query: {info: params}});
+                        this.isEdit = false;
                     }, 1000);
                 }
                 else {
@@ -292,6 +295,8 @@ export default {
             }).catch(err => {
                 console.log(err);
                 this.$message.error(err);
+            }).finally(() => {
+                this.isLoading = false;
             });
         }
     },

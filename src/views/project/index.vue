@@ -239,10 +239,16 @@ export default {
                 throw new Error('获取信息失败');
             })
         },
+        /**
+         * 项目编辑
+         */
         handelEdit(row) {
             const params = JSON.stringify(row);
             this.$router.push({path: '/project/edit', query: {info: params}});
         },
+        /**
+         * 查看项目日志
+         */
         checkLog(row) {
             const params = JSON.stringify(row);
             this.$router.push({path: '/project/log', query: {info: params}});
