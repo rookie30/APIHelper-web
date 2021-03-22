@@ -46,8 +46,8 @@ module.exports = {
         }
       },
       '/auth': {
-        // target: process.env.VUE_APP_BASE_API,
-        target: 'http://localhost:8015/',
+        target: process.env.VUE_APP_BASE_API,
+        // target: 'http://localhost:8015/',
         changeOrigin: true,
         pathRewrite: {
           '^/auth': 'auth'

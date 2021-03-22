@@ -222,7 +222,7 @@ export default {
             return new Promise((resolve, reject) => {
                 let params = { projectId: this.projectData.id };
                 getMemberInfo(params).then(res => {
-                    if(res.code == '200') {
+                    if(res.status == '200') {
                         resolve(res);
                     }
                     else {
@@ -238,7 +238,7 @@ export default {
             return new Promise((resolve, reject) => {
                 let params = { projectId: this.projectData.id };
                 getGroupInfo(params).then(res => {
-                    if(res.code == '200') {
+                    if(res.status == '200') {
                         resolve(res);
                     }
                     else {
@@ -280,8 +280,8 @@ export default {
         handelEdit() {
             this.isLoading = true;
             updateProject(this.projectData).then(res => {
-                console.log(res);
-                if(res.code == "200") {
+                // console.log(res);
+                if(res.status == "200") {
                     this.$message.success("修改成功");
                     setTimeout(() => {
                         const params = JSON.stringify(this.projectData);

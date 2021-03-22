@@ -59,7 +59,7 @@ export default {
         handelCreate() {
             createGroup(this.groupInfo).then(res => {
                 // console.log(res);
-                if(res.code == '201') {
+                if(res.status == '201') {
                     this.$message.success("创建成功");
                     this.$emit("handelGroupCreated");
                 }

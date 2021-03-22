@@ -38,7 +38,9 @@
                 </el-table-column>
                 <el-table-column
                     prop="introduce"
-                    label="简介">
+                    label="简介"
+                    width="140"
+                    show-overflow-tooltip>
                     <template slot-scope="scope">
                         {{ scope.row.introduce }}
                     </template>
@@ -54,24 +56,32 @@
                     prop="createTime"
                     label="创建时间">
                     <template slot-scope="scope">
-                        {{ scope.row.createTime }}
+                        {{ scope.row.createTime | timeFilter }}
                     </template>
                 </el-table-column>
                 <el-table-column
                     prop="updateTime"
-                    label="更新时间">
+                    label="更新时间"
+                    width="180">
                     <template slot-scope="scope">
                         {{ scope.row.updateTime }}
                     </template>
                 </el-table-column>
                 <el-table-column
-                    label="操作">
+                    label="操作"
+                    width="190">
                     <template slot-scope="scope">
                         <el-button 
                             circle 
-                            icon="el-icon-document-copy" 
+                            icon="el-icon-edit-outline" 
                             size="mini"
                             @click="handelEdit(scope.row)">
+                        </el-button>
+                        <el-button
+                            circle
+                            icon="el-icon-folder-opened"
+                            size="mini"
+                            @click="interfaceManage(scope.row)">
                         </el-button>
                         <el-button
                             circle
@@ -113,6 +123,12 @@ export default {
     components: {
         ProjectAddForm,
     },
+    filters: {
+        timeFilter(time) {
+            let date = time.split(" ");
+            return date[0];
+        }
+    },
     data() {
         return {
             tableData: [],
@@ -127,13 +143,22 @@ export default {
         }
     },
     methods: {
+        /**
+         * 取消创建项目
+         */
         handleCancel() {
             this.dialogVisible = false;
         },
+        /**
+         * 创建项目成功回调函数
+         */
         handleConfirm() {
             this.init();
             this.dialogVisible = false;
         },
+        /**
+         * 分页
+         */
         handelSizeChange(val) {
             this.pageData.size = val;
             this.init();
@@ -141,10 +166,13 @@ export default {
         handelIndex(index) {
             return index + this.pageData.size * (this.pageData.currentPage - 1) + 1;
         },
+        /**
+         * 获取项目信息
+         */
         getInfo() {
             return new Promise((resolve, reject) => {
                 getMessage(this.pageData).then(res => {
-                    if(res.code == '200') {
+                    if(res.status == '200') {
                         resolve(res);
                     }
                     else {
@@ -158,7 +186,7 @@ export default {
             const infoPromise = this.getInfo();
             infoPromise.then(res => {
                 // console.log(res);
-                if(res.code == '200') {
+                if(res.status == '200') {
                     if(this.pageData.total != res.total) {
                         this.pageData.total = res.total;
                     }
@@ -186,7 +214,7 @@ export default {
                 type: 'warning'
             }).then(async () => {
                 await deleteProject(this.row).then(res => {
-                    if(res.code == '200') {
+                    if(res.status == '200') {
                         this.$message.success('删除成功');
                         this.init();
                     }
@@ -210,7 +238,7 @@ export default {
             const infoPromise = this.getInfo();
             infoPromise.then(res => {
                 // console.log(res);
-                if(res.code == '200') {
+                if(res.status == '200') {
                     this.tableData = res.rows;
                     this.pageData.total = res.total;
                 }
@@ -228,7 +256,7 @@ export default {
         handleCurrentChange() {
             const infoPromise = this.getInfo();
             infoPromise.then(res => {
-                if(res.code == '200') {
+                if(res.status == '200') {
                     this.tableData = res.rows;
                 }
                 else {
@@ -252,6 +280,17 @@ export default {
         checkLog(row) {
             const params = JSON.stringify(row);
             this.$router.push({path: '/project/log', query: {info: params}});
+        },
+        /**
+         * 接口管理
+         */
+        interfaceManage(row) {
+            const params = JSON.stringify({ 
+                id: row.id, 
+                projectName: row.projectName, 
+                createBy: row.createBy
+            });
+            this.$router.push({path: '/interface/interfaceConfig', query: {info: params}});    
         }
     },
     mounted() {

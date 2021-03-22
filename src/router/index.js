@@ -64,21 +64,22 @@ export const constantRoutes = [
   {
     path: '/project',
     component: Layout,
-    redirect: '/project/index',
+    redirect: '/project/list',
+    meta: { title: '项目管理', icon: 'project' },
     children: [
       {
-        path: 'index',
-        name: 'Project',
+        path: 'list',
+        name: 'ProjectList',
         component: () => import('@/views/project/index'),
-        meta: { title: '项目管理', icon: 'project' }
+        meta: { title: '项目列表' },
       },
       {
         path: 'edit',
         name: 'ProjectEdit',
         component: () => import('@/views/project/edit/index'),
-        meta: { title: '项目信息', icon: 'project' },
+        meta: { title: '项目信息' },
         hidden: true
-      }
+      },
     ]
   },
 
@@ -98,23 +99,25 @@ export const constantRoutes = [
   },
 
   {
-    path: '/interface',
-    component: Layout,
-    redirect: '/interface/index',
-    meta: { title: '接口管理', icon: 'interfaceManage' },
-    children: [
-      {
-        path: 'index',
-        component: () => import('@/views/interface/interfaceConfig'),
-        meta: { title: '接口配置', icon: 'interfaceConfig' },
-      },
-      {
-        path: 'log',
-        name: 'Log',
-        component: () => import('@/views/interface/interfaceLog'),
-        meta: { title: '日志查询', icon: 'log' },
-      }
-    ]
+    path: '/interface/interfaceConfig',
+    component: () => import('@/views/interfaceManager/interfaceConfig'),
+    meta: { title: '接口管理' },
+    hidden: true,
+  },
+
+  {
+    path: '/interface/interfaceConfig/create',
+    name: 'InterfaceCreate',
+    component: () => import('@/views/interfaceManager/interfaceInfo'),
+    meta: { title: '接口信息管理' },
+    hidden: true
+  },
+
+  {
+    path: '/interface/interfaceLog',
+    component: () => import('@/views/interfaceManager/interfaceLog'),
+    meta: { title: '接口日志' },
+    hidden: true
   },
 
   // 404 page must be placed at the end !!!

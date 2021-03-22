@@ -1,8 +1,7 @@
-<!-- 项目日志 -->
 <template>
     <div class="container">
         <div class="header">
-            <el-page-header @back="goBack" :content="projectData.projectName+' 项目日志'">
+            <el-page-header @back="goBack" :content="'接口 ' + interfaceInfo.interfaceName + ' 接口日志'">
             </el-page-header>
         </div>
         <div class="body" v-loading="isLoading">
@@ -22,12 +21,15 @@
                     </el-timeline-item>
                 </el-timeline>
             </div>
+            <div class="blank-tip" v-show="checkNull()">
+                <span class="tip-content">暂无内容</span>
+            </div>
         </div>
     </div>
 </template>
 
 <script>
-import { getProjectLog } from '@/api/system/project';
+import { getInterfaceLog } from '@/api/system/interfaceManager';
 
 export default {
     filters: {
@@ -38,73 +40,59 @@ export default {
     },
     data() {
         return {
-            projectData: '',
             logData: [],
             isLoading: false,
+            interfaceInfo: {},
         }
     },
     methods: {
-        /**
-         * 从url中获取项目信息
-         */
-        getInfoFromQuery() {
-            // this.projectData = this.$route.query;
-            this.projectData = JSON.parse(this.$route.query.info);
-        },
         goBack() {
             this.$router.back(-1);
         },
         /**
-         * 获取日志信息
+         * 获取接口日志信息
          */
-        getLog() {
+        getLogInfo() {
             return new Promise((resolve, reject) => {
-                const params = { projectId: this.projectData.id };
-                getProjectLog(params).then(res => {
-                    // console.log(res);
-                    if(res.status == '200') {
+                getInterfaceLog(this.interfaceInfo).then(res => {
+                    if(res.status == 200) {
                         resolve(res);
-                    }
-                    else {
-                        reject("获取日志失败");
+                    } else {
+                        reject('获取接口日志失败');
                     }
                 });
             });
         },
+        /**
+         * 从query中获取接口信息
+         */
+        getInfoFromQuery() {
+            this.interfaceInfo = JSON.parse(this.$route.query.interfaceInfo);
+        },
         init() {
-            this.isLoading = true;
-            const logPromise = this.getLog();
-            logPromise.then(res =>{
-                // console.log(res);
-                // 将日志根据记录时间倒叙排序
-                let logs = res.logs.sort((a, b) => {
-                    return a.recordTime > b.recordTime ? -1 : 1;
-                })
-                this.logData = logs;
-                // 切割日志内容
-                this.splitTitle();
+            const logPromise = this.getLogInfo();
+            logPromise.then(res => {
+                console.log(res);
+                this.logData = res.logData;
             }).catch(err => {
-                console.log(err);
-            }).finally(() => {
-                this.isLoading = false;
+                this.$message.error(err);
             });
         },
         /**
-         * 分割日志内容，提取日志标题
+         * 判断日志内容是否为空，以控制空白提示是否显示
          */
-        splitTitle() {
-            this.logData.forEach(item => {
-                const title = item.content.split(' ')[0] + ' ' +  
-                        item.content.split(' ')[4];
-                item.title = title;
-            });
-        },
-        
+        checkNull() {
+            if(this.logData.length == 0) {
+                return true;
+            } else {
+                return false;
+            }
+        }
     },
     created() {
         this.getInfoFromQuery();
         this.init();
-    },
+    }
 }
 </script>
 
