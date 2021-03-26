@@ -140,16 +140,23 @@
 
 <script>
 import ParamsTable from '@/components/ParamsTable';
-import { createInterface } from '@/api/system/interfaceManager';
+import { createInterface, updateInterface } from '@/api/system/interfaceManager';
 
 export default {
-    name: 'InterfaceCreateForm',
+    name: 'InterfaceInfoForm',
     components: {
         ParamsTable,
     },
     props: {
         projectInfo: {
             type: Object
+        },
+        type: {
+            type: String
+        },
+        interfaceInfo: {
+            type: Object,
+            default: {}
         }
     },
     data() {
@@ -173,9 +180,7 @@ export default {
         }
     },
     created() {
-        // 加入项目信息
-        this.interfaceData.projectId = this.projectInfo.id;
-        this.interfaceData.createBy = this.projectInfo.createBy;
+        this.init();
     },
     methods: {
         /**
@@ -191,6 +196,17 @@ export default {
             this.interfaceData.body.content = this.checkNull(this.interfaceData.body.content);
             // console.log(this.interfaceData);            
             this.isLoading = true;
+            // 根据访问类型选择提交事件
+            if(this.type == 'create') {
+                this.createInterfaceHandler();
+            } else {
+                this.updateInterfaceHandler();
+            }
+        },
+        /**
+         * 创建接口
+         */
+        createInterfaceHandler() {
             createInterface(this.interfaceData).then(res => {
                 // console.log(res);
                 if(res.status == '201') {
@@ -201,6 +217,22 @@ export default {
             }).catch(err => {
                 // console.log(err);
                 this.$message.error(err);
+            }).finally(() => {
+                this.isLoading = false;
+            });
+        },
+        /**
+         * 更新接口
+         */
+        updateInterfaceHandler() {
+            updateInterface(this.interfaceData).then(res => {
+                if(res.status == '200') {
+                    this.$message.success('更新成功');
+                } else {
+                    throw new Error('更新失败');
+                }
+            }).catch(err => {
+                this.$message.error(err)
             }).finally(() => {
                 this.isLoading = false;
             });
@@ -266,6 +298,19 @@ export default {
             });
             // console.log(paramList);
             return filteredList;
+        },
+        init() {
+            // 加入项目信息
+            this.interfaceData.projectId = this.projectInfo.id;
+            this.interfaceData.createBy = this.projectInfo.createBy;
+            // 判断是编辑还是创建接口
+            if(this.type == 'edit') {
+                // 将body、params、header重新解析为数组对象
+                this.interfaceInfo.params = JSON.parse(this.interfaceInfo.params);
+                this.interfaceInfo.body = JSON.parse(this.interfaceInfo.body);
+                this.interfaceInfo.headers = JSON.parse(this.interfaceInfo.headers);
+                this.interfaceData = this.interfaceInfo;
+            }
         }
     },
     

@@ -56,15 +56,21 @@
                     fixed="right">
                     <template slot-scope="scope">
                         <el-button 
-                            icon="el-icon-document"
+                            icon="el-icon-edit-outline"
                             circle
-                            size="mini">
+                            size="mini"
+                            @click="editInterface(scope.row)">
                         </el-button>
                         <el-button
                             circle
                             icon="el-icon-date"
                             size="mini"
                             @click="checkLog(scope.row)">
+                        </el-button>
+                        <el-button
+                            circle
+                            icon="el-icon-copy-document"
+                            size="mini">
                         </el-button>
                     </template>
                 </el-table-column>
@@ -81,7 +87,6 @@ export default {
     data() {
         return {
             projectInfo: {}, // 当前选择的项目
-            projectList: [], // 项目列表
             interfaceData: [], // 接口信息
             isLoading: false,
         }
@@ -111,10 +116,10 @@ export default {
             this.getInfoFromQuery();
             const interfaceInfoPromise = this.getInterfaceInformation();
             interfaceInfoPromise.then(res => {
-                console.log(res);
                 this.interfaceData = res.interfaceList;
             }).catch(err => {
-                console.log(err);
+                this.$message.error(err);
+                // console.log(err);
             });
         },
         goBack() {
@@ -147,13 +152,27 @@ export default {
          * 查看接口日志
          */
         checkLog(row) {
-            console.log(row);
             const interfaceInfo = JSON.stringify({
+                interfaceId: row.id,
                 interfaceName: row.name
             });
             this.$router.push({path: '/interface/interfaceLog', query: {
                 interfaceInfo: interfaceInfo
             }});
+        },
+        /**
+         * 编辑接口信息
+         */
+        editInterface(row) {
+            const params = JSON.stringify({
+                type: 'edit',
+                projectInfo: this.projectInfo,
+                interfaceInfo: row
+            });
+            this.$router.push({path: '/interface/interfaceConfig/edit', query: {
+                info: params
+            }});
+            // console.log(params);
         }
     },
     created() {

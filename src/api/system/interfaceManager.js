@@ -39,6 +39,20 @@ export function createInterface(data) {
 }
 
 /**
+ * 更新接口
+ * @param {*} data 
+ * @returns 
+ */
+export function updateInterface(data) {
+    return request({
+        url: '/api/interface/update',
+        method: 'post',
+        data
+    })
+}
+
+
+/**
  * 获取接口日志
  * @param {*} params 
  */

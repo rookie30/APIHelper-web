@@ -5,26 +5,28 @@
             <el-page-header @back="goBack" :content="pageTitle"></el-page-header>
         </div>
         <div class="body">
-            <InterfaceCreateForm
-                v-show="type=='create'"
-                :projectInfo="projectInfo">
-            </InterfaceCreateForm>
+            <InterfaceInfoForm
+                :projectInfo="projectInfo"
+                :type="type"
+                :interfaceInfo="interfaceInfo">
+            </InterfaceInfoForm>
         </div>
     </div>
 </template>
 
 <script>
-import InterfaceCreateForm from '@/components/interfaceManager/createInterface';
+import InterfaceInfoForm from '@/components/interfaceManager/interfaceInfoForm';
 
 export default {
     components: {
-        InterfaceCreateForm
+        InterfaceInfoForm
     },
     data() {
         return {
             pageTitle: '', // 页面标题
             type: '', // 访问类型
-            projectInfo: {}
+            projectInfo: {},
+            interfaceInfo: {}
         }
     },
     methods: {
@@ -42,6 +44,7 @@ export default {
                 this.pageTitle = '接口创建';
             } else {
                 this.pageTitle = '接口信息编辑';
+                this.interfaceInfo = params.interfaceInfo;
             }
         }
     },

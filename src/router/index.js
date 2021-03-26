@@ -109,7 +109,15 @@ export const constantRoutes = [
     path: '/interface/interfaceConfig/create',
     name: 'InterfaceCreate',
     component: () => import('@/views/interfaceManager/interfaceInfo'),
-    meta: { title: '接口信息管理' },
+    meta: { title: '接口信息创建' },
+    hidden: true
+  },
+
+  {
+    path: '/interface/interfaceConfig/edit',
+    name: 'InterfaceEdit',
+    component: () => import("@/views/interfaceManager/interfaceInfo"),
+    meta: { title: '接口信息编辑' },
     hidden: true
   },
 

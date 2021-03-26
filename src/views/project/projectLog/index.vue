@@ -48,7 +48,6 @@ export default {
          * 从url中获取项目信息
          */
         getInfoFromQuery() {
-            // this.projectData = this.$route.query;
             this.projectData = JSON.parse(this.$route.query.info);
         },
         goBack() {
@@ -79,7 +78,7 @@ export default {
                 // 将日志根据记录时间倒叙排序
                 let logs = res.logs.sort((a, b) => {
                     return a.recordTime > b.recordTime ? -1 : 1;
-                })
+                });
                 this.logData = logs;
                 // 切割日志内容
                 this.splitTitle();

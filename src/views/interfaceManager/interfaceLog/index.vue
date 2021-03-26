@@ -72,8 +72,12 @@ export default {
         init() {
             const logPromise = this.getLogInfo();
             logPromise.then(res => {
-                console.log(res);
-                this.logData = res.logData;
+                // console.log(res);
+                // 将日志根据记录时间倒叙排序
+                let logs = res.logData.sort((a, b) => {
+                    return a.recordTime > b.recordTime ? -1 : 1;
+                });
+                this.logData = logs;
             }).catch(err => {
                 this.$message.error(err);
             });
