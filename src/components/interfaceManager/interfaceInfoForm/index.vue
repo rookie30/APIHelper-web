@@ -1,6 +1,6 @@
 <!-- 接口创建表单组件 -->
 <template>
-    <div class="container">
+    <div class="container" style="padding-bottom: 10px;">
         <el-form
             :model="interfaceData"
             ref="interfaceForm"
@@ -62,7 +62,11 @@
                             <el-option label="PATCH" value="PATCH"></el-option>
                             <el-option label="DELETE" value="DELETE"></el-option>
                         </el-select>
-                        <el-button slot="append">发送</el-button>
+                        <el-button 
+                            slot="append"
+                            @click="testInterface">
+                            发送
+                        </el-button>
                     </el-input>
                     <el-button 
                         type="primary" 
@@ -135,12 +139,42 @@
                 </el-tabs>
             </el-form-item>
         </el-form>
+        <el-card 
+            class="response-card" 
+            shadow="never"
+            v-loading="responseIsLoading">
+            <div slot="header" class="clearfix">
+                <span 
+                    class="response-header-title title">
+                    Response
+                </span>
+                <el-tag 
+                    style="float: right;" 
+                    :type="responseStatusHandler()"
+                    v-show="responseIsShow">
+                    {{ response.status }}
+                </el-tag>
+            </div>
+            <div>
+                <div v-show="responseIsShow">
+                    <div class="response-body">
+                        <span class="response-body-title title">Body</span>
+                        <pre v-text="response.data"></pre>
+                    </div>
+                </div>
+                <span 
+                    class="response-tip"
+                    v-show="!responseIsShow">
+                    点击“发送”得到结果
+                </span>
+            </div>
+        </el-card>
     </div>
 </template>
 
 <script>
 import ParamsTable from '@/components/ParamsTable';
-import { createInterface, updateInterface } from '@/api/system/interfaceManager';
+import { createInterface, updateInterface, interfaceTest } from '@/api/system/interfaceManager';
 
 export default {
     name: 'InterfaceInfoForm',
@@ -176,7 +210,10 @@ export default {
             paramsLocation: 'Params',
             isEditName: false, 
             isEditIntroduce: false, // 是否编辑接口简介
-            isLoading: false
+            isLoading: false,
+            response: {},
+            responseIsShow: false,
+            responseIsLoading: false
         }
     },
     created() {
@@ -311,13 +348,43 @@ export default {
                 this.interfaceInfo.headers = JSON.parse(this.interfaceInfo.headers);
                 this.interfaceData = this.interfaceInfo;
             }
-        }
+        },
+        /**
+         * 测试接口
+         */
+        testInterface() {
+            this.responseIsLoading = true;
+            interfaceTest(this.interfaceData).then(res => {
+                console.log(res);
+                this.response = res;
+            }).catch(err => {
+                console.log(err);
+                this.response = err;
+                console.log(err.data);
+            }).finally(() => {
+                this.responseIsShow = true;
+                this.responseIsLoading = false;
+            });
+        },
+        /**
+         * 状态码判断处理
+         */
+        responseStatusHandler() {
+            const status = this.response.status;
+            if(status == 200 || status == 201) {
+                return 'success';
+            }
+            return 'danger';
+        },
     },
     
 }
 </script>
 
 <style scoped>
+.container {
+    padding-bottom: 10px;
+}
 .form-item {
     padding: 0 10px;
     margin-bottom: 15px;
@@ -379,5 +446,27 @@ export default {
     justify-content: center;
     width: 100%;
     color: lightgray;
+}
+.response-card {
+    margin: 10px 10px;
+}
+.response-tip {
+    display: block;
+    color: rgb(163, 159, 159);
+    width: 100%;
+    text-align: center;
+}
+.response-header-title {
+    height: 32px;
+    line-height: 32px;
+    
+}
+.response-body {
+    display: flex;
+    flex-direction: column;
+}
+.response-body-title {
+    /* font-size: 15px; */
+    margin-bottom: 15px;
 }
 </style>

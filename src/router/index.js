@@ -128,6 +128,21 @@ export const constantRoutes = [
     hidden: true
   },
 
+  {
+    path: '/notice',
+    component: Layout,
+    redirect: 'index',
+    children: [
+      {
+        path: 'index',
+        name: 'Notice',
+        component: () => import('@/views/notice'),
+        meta: { title: '消息中心' },
+      },
+    ],
+    hidden: true
+  },
+
   // 404 page must be placed at the end !!!
   { path: '*', redirect: '/404', hidden: true }
 ]

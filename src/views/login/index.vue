@@ -135,6 +135,7 @@ export default {
             this.$router.push({ path: this.redirect || '/' })
           }).catch(() => {
             this.loading = false
+            this.$message.error('用户名或密码错误');
             this.getCode()
           })
         } else {

@@ -16,6 +16,16 @@
               个人中心
             </el-dropdown-item>
           </router-link>
+          <router-link to="/notice/index">
+            <el-badge 
+              :value="unReadNoticeCount" 
+              :max="99"
+              :hidden="isBadgeHidden">
+              <el-dropdown-item>
+                消息中心
+              </el-dropdown-item>
+            </el-badge>
+          </router-link>
           <!-- <a target="_blank" href="https://github.com/PanJiaChen/vue-admin-template/">
             <el-dropdown-item>Github</el-dropdown-item>
           </a>
@@ -35,6 +45,7 @@
 import { mapGetters } from 'vuex'
 import Breadcrumb from '@/components/Breadcrumb'
 import Hamburger from '@/components/Hamburger'
+import { getUnreadNoticeCount } from '@/api/system/notice';
 
 export default {
   components: {
@@ -49,11 +60,14 @@ export default {
   },
   data() {
     return {
-      user: {}
+      user: {},
+      unReadNoticeCount: 0,
+      isBadgeHidden: false,
     }
   },
   created() {
-    this.getUserInfo();
+    // this.getUserInfo();
+    this.getUnreadCount();
   },
   methods: {
     toggleSideBar() {
@@ -65,6 +79,29 @@ export default {
     },
     getUserInfo() {
       this.user = window.sessionStorage.getItem('user');
+    },
+    /**
+     * 获取未读通知数量 
+     */
+    getUnreadCount() {
+      getUnreadNoticeCount().then(res => {
+        // console.log(res);
+        if(res.status == 200) {
+          this.unReadNoticeCount = res.count;
+          this.checkBadgeIsHidden(res.count);
+        } else {
+          throw new Error('获取未读通知数量失败');
+        }
+      }).catch(err => {
+        console.log(err);
+      });
+    },
+    checkBadgeIsHidden(val) {
+      if(val > 0) {
+        this.isBadgeHidden = false;
+      } else {
+        this.isBadgeHidden = true;
+      }
     }
   }
 }

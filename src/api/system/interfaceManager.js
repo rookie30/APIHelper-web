@@ -1,4 +1,5 @@
 import request from '@/utils/request';
+import testRequest from '@/utils/testRequest';
 
 /**
  * 获取参与的所有项目信息
@@ -61,5 +62,18 @@ export function getInterfaceLog(params) {
         url: '/api/interface/getLog',
         method: 'get',
         params
+    })
+}
+
+export function interfaceTest(data) {
+    const requestType = data.requestType;
+    const requestUrl = data.requestUrl;
+    let params = [];
+    let headers = [];
+    let body = {};
+    params = JSON.stringify(params);
+    return testRequest({
+        url: requestUrl,
+        method: requestType
     })
 }

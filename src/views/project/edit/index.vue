@@ -250,11 +250,12 @@ export default {
         init() {
             this.isLoading = true;
             const groupPromise = this.getGroupInformation();
-            // memberPromise.then(res => {
-            //     console.log(res);
-            // }).catch(err => {
-            //     console.log(err);
-            // });
+            const memberPromise = this.getMemberInformation();
+            memberPromise.then(res => {
+                console.log(res);
+            }).catch(err => {
+                console.log(err);
+            });
             groupPromise.then(res => {
                 // console.log(res);
                 this.groupData = res.groups;
