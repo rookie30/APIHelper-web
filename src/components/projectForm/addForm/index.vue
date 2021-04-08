@@ -86,7 +86,7 @@ export default {
                 if(valid) {
                     this.isLoading = true;
                     create(this.projectData).then((res) => {
-                        // console.log(res);
+                        console.log(res);
                         if(res.status == "201") {
                             this.$message.success("创建成功");
                             setTimeout(() => {

@@ -10,23 +10,22 @@
             <span class="category-title">未读消息</span>
             <el-badge style="margin-left: 10px" ></el-Badge>
           </el-menu-item>
-          <el-menu-item index="readed">
+          <el-menu-item index="read">
             <span class="category-title">已读消息</span>
             <el-badge style="margin-left: 10px" class-name="gray-dadge" ></el-badge>
           </el-menu-item>
         </el-menu>
       </div>
       <div class="message-page-con message-list-con">
-        <!-- <Spin fix v-if="listLoading" size="large"></Spin> -->
         <el-menu 
-          v-loading="listLoading"
-          @select="handelView">
+          v-loading="listLoading">
           <el-menu-item 
             v-for="item in messageList"
             :name="item.id" 
             :key="item.id"
-            :index="item.id.toString()"
-            class="message-list-item">
+            :index="item.id"
+            class="message-list-item"
+            @click="handelView(item)">
             <div class="message-list-content">
                 <span class="item-title">
                   {{ item.title }}
@@ -39,7 +38,6 @@
         </el-menu>
       </div>
       <div class="message-page-con message-view-con">
-        <!-- <Spin fix v-if="contentLoading" size="large"></Spin> -->
         <div class="message-view-header">
           <h2 class="message-view-title">
             {{ showingMsgItem.title }}
@@ -55,11 +53,11 @@
 </template>
 
 <script>
-import { getNoticeList } from '@/api/system/notice';
+import { getNoticeList, setReadNotice } from '@/api/system/notice';
 
 const listDic = {
   unread: 'noticeUnreadList',
-  readed: 'noticeReadedList',
+  read: 'noticeReadList',
 }
 export default {
   name: 'message_page',
@@ -70,8 +68,9 @@ export default {
       currentMessageType: 'unread',
       messageContent: '',
       showingMsgItem: {},
-      noticeUnreadList: [],
-      noticeReadedList: [],
+      noticeUnreadList: [], // 未读消息
+      noticeReadList: [], // 已读消息
+      readList: [], // 用户已读的信息列表
     }
   },
   computed: {
@@ -84,7 +83,16 @@ export default {
       this[name] = false
     },
     handleSelect (name) {
-      this.currentMessageType = name
+      this.currentMessageType = name;
+      if(JSON.stringify(this.showingMsgItem) != '{}' && this.showingMsgItem.type == 0) {
+          let readItem = this.showingMsgItem;
+          let index = this.noticeUnreadList.findIndex(item => item.id == readItem.id);
+          this.noticeUnreadList.splice(index, 1);
+          this.noticeReadList.push(readItem);
+      }
+      this.showingMsgItem = {};
+      this.messageContent = '';
+      
     },
     /**
      * 获取通知
@@ -110,32 +118,61 @@ export default {
      */
     noticeHandler(noticeList) {
       let unreadList = new Array();
-      let readedList = new Array();
+      let readList = new Array();
       noticeList.forEach(item => {
+        item.id += '';
         if(item.type == 0) {
           unreadList.push(item);
         } else {
-          readedList.push(item);
+          readList.push(item);
         }
       });
       this.noticeUnreadList = unreadList;
-      this.noticeReadedList = readedList;
+      this.noticeReadList = readList;
     },
-    handelView(key) {
-      const list = this.messageList;
-      const noticeItem = list.find(item => item.id == key);
-      this.showingMsgItem = noticeItem;
-      this.messageContent = noticeItem.content;
+    /**
+     * 消息项点击后处理事件
+     */
+    handelView(noticeItem) {
+      // 根据选择的消息类型从对应的消息列表中查找消息
       if(this.currentMessageType == 'unread') {
-        this.messageList.find(item => item.id == key).type = 1;
-        let index = this.noticeUnreadList.findIndex(item => item.id == key);
-        this.noticeUnreadList.splice(index, 1);
-        this.noticeReadedList.push(this.messageList.find(item => item.id == key));
+        // 判断之前是否有显示的未读项，若有则标记为已读
+        if(JSON.stringify(this.showingMsgItem) != '{}' && this.showingMsgItem.type == 0) {
+          let readItem = this.showingMsgItem;
+          readItem.type = 1;
+          let index = this.noticeUnreadList.findIndex(item => item.id == readItem.id);
+          this.noticeUnreadList.splice(index, 1);
+          this.noticeReadList.push(readItem);
+        }
+        let item = this.noticeUnreadList.find(item => item.id == noticeItem.id);
+        this.showingMsgItem = item;
+        this.messageContent = item.content;
+        this.readList.push(item);
+      } else {
+        let item = this.noticeReadList.find(item => item.id == noticeItem.id);
+        this.showingMsgItem = item;
+        this.messageContent = item.content;
       }
+    },
+    /**
+     * 将消息标记为已读
+     */
+    setRead() {
+      if(this.readList.length != 0) {
+        setReadNotice(this.readList).then(res => {
+          // console.log(res);
+        }).catch(err => {
+          console.log(err);
+        });
+      }
+      // console.log(this.readList);
     }
   },
   created() {
     this.getNotice();
+  },
+  destroyed() {
+    this.setRead();
   }
 }
 </script>

@@ -135,7 +135,7 @@ export default {
             this.$router.push({ path: this.redirect || '/' })
           }).catch(() => {
             this.loading = false
-            this.$message.error('用户名或密码错误');
+            // this.$message.error('用户名或密码错误');
             this.getCode()
           })
         } else {
@@ -146,6 +146,7 @@ export default {
     },
     point() {
       const point = Cookies.get('point') !== undefined
+      console.log(point);
       if (point) {
         this.$notify({
           title: '提示',

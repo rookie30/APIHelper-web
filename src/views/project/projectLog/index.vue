@@ -32,7 +32,13 @@ import { getProjectLog } from '@/api/system/project';
 export default {
     filters: {
         typeFilter(type) {
-            const typeMap = { create: 'success', delete: 'danger', update: 'info' };
+            const typeMap = { 
+                create: 'success', 
+                delete: 'danger', 
+                update: 'info', 
+                invite: 'warning',
+                remove: 'warning'
+            };
             return typeMap[type];
         }
     },

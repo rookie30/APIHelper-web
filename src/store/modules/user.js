@@ -72,7 +72,7 @@ const user = {
       return new Promise((resolve, reject) => {
         logout(state.token).then((res) => {
           LogOut(commit)
-          // removeToken() // must remove  token  first
+          removeToken() // must remove  token  first
           // resetRouter()
           // commit('RESET_STATE')
           resolve()

@@ -5,7 +5,10 @@
     <breadcrumb class="breadcrumb-container" />
 
     <div class="right-menu">
-      <el-dropdown class="avatar-container" trigger="click">
+      <el-dropdown 
+        class="avatar-container" 
+        trigger="click"
+        @visible-change="handelShow">
         <div class="avatar-wrapper">
           <el-avatar src="/static/avatar1.jpg"></el-avatar>
           <i class="el-icon-caret-bottom" />
@@ -26,12 +29,6 @@
               </el-dropdown-item>
             </el-badge>
           </router-link>
-          <!-- <a target="_blank" href="https://github.com/PanJiaChen/vue-admin-template/">
-            <el-dropdown-item>Github</el-dropdown-item>
-          </a>
-          <a target="_blank" href="https://panjiachen.github.io/vue-element-admin-site/#/">
-            <el-dropdown-item>Docs</el-dropdown-item>
-          </a> -->
           <el-dropdown-item divided @click.native="logout">
             <span style="display:block;color:red">退出登录</span>
           </el-dropdown-item>
@@ -85,7 +82,7 @@ export default {
      */
     getUnreadCount() {
       getUnreadNoticeCount().then(res => {
-        // console.log(res);
+        console.log(res);
         if(res.status == 200) {
           this.unReadNoticeCount = res.count;
           this.checkBadgeIsHidden(res.count);
@@ -101,6 +98,11 @@ export default {
         this.isBadgeHidden = false;
       } else {
         this.isBadgeHidden = true;
+      }
+    },
+    handelShow(val) {
+      if(val) {
+        this.getUnreadCount();
       }
     }
   }

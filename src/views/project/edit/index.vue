@@ -57,77 +57,16 @@
                     </el-form-item>
                 </el-form>
             </el-card>
-            <!-- 项目小组管理 -->
-            <el-card class="group-card management-card"         v-show="managementChoose">
-                    <div slot="header">
-                        <span>项目小组管理</span>
-                        <el-button
-                            icon="el-icon-refresh"
-                            circle
-                            class="changeBtn"
-                            size="mini"
-                            @click="managementChoose=!managementChoose">
-                        </el-button>
-                        <el-button
-                            style="float:right;padding:3px 0;"
-                            type="text"
-                            @click="createFormVisible=true">
-                            创建小组
-                        </el-button>
-                    </div>
-                    <el-table :data="groupData" height="400">
-                        <el-table-column 
-                            prop="groupName"
-                            label="小组名称"
-                            width="150px">
-                        </el-table-column>
-                        <el-table-column
-                            prop="leader"
-                            label="组长"
-                            width="150px">
-                        </el-table-column>
-                        <el-table-column
-                            prop="member"
-                            label="项目组成员">
-                        </el-table-column>
-                        <el-table-column
-                            label="操作"
-                            width="100px"
-                            fixed="right">
-                            <el-button
-                                icon="el-icon-edit"
-                                circle
-                                size="mini">
-                            </el-button>
-                            <el-button 
-                                type="danger" 
-                                icon="el-icon-delete" 
-                                circle
-                                size="mini">
-                            </el-button>
-                        </el-table-column>
-                    </el-table>
-                    <CreateGroupForm
-                        :visible="createFormVisible"
-                        :projectId="projectData.id"
-                        @handelCancel="createCancel"
-                        @handelGroupCreated="createSucceed">
-                    </CreateGroupForm>
-            </el-card>
             <!-- 项目成员管理 -->
-            <el-card class="member-card management-card" v-show="!managementChoose">
+            <el-card 
+                class="member-card management-card"
+                v-loading="memberIsLoading">
                 <div slot="header">
                     <span>项目成员管理</span>
                     <el-button
-                        icon="el-icon-refresh"
-                        circle
-                        class="changeBtn"
-                        size="mini"
-                        @click="managementChoose=!managementChoose">
-                    </el-button>
-                    <el-button
                         style="float:right;padding:3px 0;"
-                        type="text">
+                        type="text"
+                        @click="invitationDialogVisible = true">
                         邀请成员
                     </el-button>
                 </div>
@@ -152,34 +91,86 @@
                         label="联系方式">
                     </el-table-column>
                     <el-table-column
-                        prop="group"
-                        label="所属小组">
+                        prop="gender"
+                        label="性别"
+                        width="80px">
+                        <template slot-scope="scope">
+                            {{ scope.row.gender | genderFilter }}
+                        </template>
                     </el-table-column>
                     <el-table-column
                         label="操作"
                         width="100px"
                         fixed="right">
-                        <el-button 
-                            type="danger" 
-                            icon="el-icon-delete" 
-                            circle
-                            size="mini">
-                        </el-button>
+                        <template slot-scope="scope">
+                            <!-- <el-button 
+                                type="text"
+                                size="mini"
+                                style="color:red;"
+                                @click="removeMember(scope.row)">
+                                移除
+                            </el-button> -->
+                            <el-popconfirm
+                                confirm-button-text='确定'
+                                cancel-button-text='取消'
+                                icon="el-icon-info"
+                                icon-color="red"
+                                title="确定移除该成员吗?"
+                                @onConfirm="removeMem(scope.row)">
+                                <el-button 
+                                    slot="reference" 
+                                    type="text"
+                                    size="mini"
+                                    style="color:red;">
+                                    移除
+                                </el-button>
+                            </el-popconfirm>
+                        </template>
                     </el-table-column>
                 </el-table>
+                <!-- 成员邀请dialog -->
+                <el-dialog
+                    title="成员邀请"
+                    :visible.sync="invitationDialogVisible"
+                    :close-on-click-modal="false"
+                    @closed="resetInvitationForm"
+                    v-loading="invitationLoading">
+                    <el-form 
+                        :model="personalData"
+                        :rules="personalRules"
+                        ref="invitationForm"
+                        label-width="80px">
+                        <el-form-item label="账号" prop="username">
+                            <el-input v-model="personalData.username"></el-input>
+                        </el-form-item>
+                    </el-form>
+                    <div slot="footer" class="dialog-footer">
+                        <el-button @click="invitationDialogVisible = false">取 消</el-button>
+                        <el-button type="primary" @click="handelInvite">确 定</el-button>
+                    </div>
+                </el-dialog>
             </el-card>
         </div>
     </div>
 </template>
 
 <script>
-import { getMemberInfo, getGroupInfo, updateProject } from '@/api/system/project';
+import { getMemberInfo, invitationMember, updateProject, removeMember } from '@/api/system/project';
 import CreateGroupForm from '@/components/projectManager/createGroupForm'; 
 
 export default {
     name: 'ProjectEdit',
     components: {
         CreateGroupForm,
+    },
+    filters: {
+        genderFilter(gender) {
+            const genderMap = {
+                0: '女',
+                1: '男'
+            };
+            return genderMap[gender];
+        }
     },
     data() {
         var checkName = (rule, projectName, callback) => {
@@ -190,21 +181,39 @@ export default {
                 callback();
             }
         };
+        var checkAccount = (rule, value, callback) => {
+            if (!(/^[0-9a-zA-Z@.]{5,20}$/).test(value)) {
+                return callback(new Error('账号应由数字、字母或@与.构成'))
+            } else {
+                callback()
+            }
+        };
         return {
             projectData: {},
             memberData: [],
-            groupData: [],
+            personalData: {
+                username: '', // 成员邀请账号信息
+            }, 
             isEdit: false,
-            managementChoose: true, // 成员管理/项目管理切换
             createFormVisible: false,
             isLoading: false,
+            memberIsLoading: false, // 成员管理模块loading判断
+            invitationLoading: false,
             groupRules: {
                 projectName: [
                     { trigger: 'blur', message: '项目名称不能为空' },
                     { max: 20, trigger: 'blur', message: '名称长度应小于20个字符' },
                     { validator: checkName, trigger: 'blur' }
                 ]
-            }
+            },
+            personalRules: {
+                username: [
+                    { trygger: 'blur', message: '请输入用户账号' },
+                    { min: 5, max: 20, trigger: 'blur', message: '账号长度应在 5 到 20 个字符内' },
+                    { validator: checkAccount, trigger: 'blur' }
+                ]
+            },
+            invitationDialogVisible: false,
         }
     },
     methods: {
@@ -216,54 +225,25 @@ export default {
             // console.log(this.projectData);
         },
         /**
-         * 获取项目组成员信息
+         * 获取项目成员信息
          */
         getMemberInformation() {
-            return new Promise((resolve, reject) => {
-                let params = { projectId: this.projectData.id };
-                getMemberInfo(params).then(res => {
-                    if(res.status == '200') {
-                        resolve(res);
-                    }
-                    else {
-                        reject("获取成员信息失败");
-                    }
-                });
-            });
-        },
-        /**
-         * 获取项目组信息
-         */
-        getGroupInformation() {
-            return new Promise((resolve, reject) => {
-                let params = { projectId: this.projectData.id };
-                getGroupInfo(params).then(res => {
-                    if(res.status == '200') {
-                        resolve(res);
-                    }
-                    else {
-                        reject("获取项目组信息失败");
-                    }
-                });
+            this.memberIsLoading = true;
+            let params = { projectId: this.projectData.id };
+            getMemberInfo(params).then(res => {
+                if(res.status == '200') {
+                    this.memberData = res.users;
+                } else {
+                    throw new Error("获取成员信息失败");
+                }
+            }).catch(err => {
+                this.$message.error(err);
+            }).finally(() => {
+                this.memberIsLoading = false;
             });
         },
         init() {
-            this.isLoading = true;
-            const groupPromise = this.getGroupInformation();
-            const memberPromise = this.getMemberInformation();
-            memberPromise.then(res => {
-                console.log(res);
-            }).catch(err => {
-                console.log(err);
-            });
-            groupPromise.then(res => {
-                // console.log(res);
-                this.groupData = res.groups;
-            }).catch(err => {
-                console.log(err);
-            }).finally(() => {
-                this.isLoading = false;
-            });
+            this.getMemberInformation();
         },
         createCancel() {
             this.createFormVisible = false;
@@ -299,6 +279,62 @@ export default {
             }).finally(() => {
                 this.isLoading = false;
             });
+        },
+        /**
+         * 邀请成员
+         */
+        handelInvite() {
+            this.$refs.invitationForm.validate(valid => {
+                if(valid) {
+                    const params = {
+                        projectId: this.projectData.id,
+                        username: this.personalData.username
+                    }
+                    this.invitationLoading = true;
+                    invitationMember(params).then(res => {
+                        // console.log(res);
+                        if(res.status == '200') {
+                            this.$message.success('操作成功');
+                            this.getMemberInformation();
+                            this.invitationDialogVisible = false;
+                        } else {
+                            throw new Error('操作失败');
+                        }
+                    }).catch(err => {
+                        console.log(err);
+                        this.$message.error(err);
+                    }).finally(() => {
+                        this.invitationLoading = false;
+                    });
+                }
+            });
+        },
+        resetInvitationForm() {
+            this.$refs['invitationForm'].resetFields();
+        },
+        /**
+         * 移除成员
+         */
+        removeMem(row) {
+            const data = {
+                username: row.username,
+                projectId: this.projectData.id
+            };
+            this.memberIsLoading = true;
+            removeMember(data).then(res => {
+                console.log(res);
+                if(res.status == '200') {
+                    this.$message.success('操作成功');
+                    this.getMemberInformation();
+                } else {
+                    throw new Error('操作失败');
+                }
+            }).catch(err => {
+                console.log(err);
+                this.$message.error(err);
+            }).finally(() => {
+                this.memberIsLoading = false;
+            });
         }
     },
     created() {
@@ -309,55 +345,55 @@ export default {
 </script>
 
 <style scoped>
-    .manager-container {
-        display: flex;
-        justify-content: center;
-    }
-    .project-card {
-        width: 40%;
-        height: 100%;
-        max-height: 500px;
-        margin: 15px 10px;
-    }
-    .editPart {
-        display: inline-block;
-        padding: 0 30px 0 15px;
-        height: 40px;
-        font-size: 14px;
-        font-family: sans-serif;
-    }
-    .introducePart {
-        width: 100%;
-        height: auto;
-        padding: 0 30px 0 15px;
-        height: 40px;
-        font-size: 14px;
-        font-family: sans-serif;
-    }
-    /* .group-card {
-        width: 60%;
-        height: 100%;
-        max-height: 500px;
-        margin: 15px 10px;
-    } */
-    .member-manager {
-        display: flex;
+.manager-container {
+    display: flex;
+    justify-content: center;
+}
+.project-card {
+    width: 40%;
+    height: 100%;
+    max-height: 500px;
+    margin: 15px 10px;
+}
+.editPart {
+    display: inline-block;
+    padding: 0 30px 0 15px;
+    height: 40px;
+    font-size: 14px;
+    font-family: sans-serif;
+}
+.introducePart {
+    width: 100%;
+    height: auto;
+    padding: 0 30px 0 15px;
+    height: 40px;
+    font-size: 14px;
+    font-family: sans-serif;
+}
+/* .group-card {
+    width: 60%;
+    height: 100%;
+    max-height: 500px;
+    margin: 15px 10px;
+} */
+.member-manager {
+    display: flex;
 
-    }
-    /* .member-card {
-        width: 100%;
-        height: 40%;
-        margin: 10px 10px;
-    } */
-    .management-card {
-        width: 60%;
-        height: 100%;
-        max-height: 500px;
-        margin: 15px 10px;
-    }
-    .changeBtn {
-        float: right;
-        margin-left: 15px;
-    }
+}
+/* .member-card {
+    width: 100%;
+    height: 40%;
+    margin: 10px 10px;
+} */
+.management-card {
+    width: 60%;
+    height: 100%;
+    max-height: 500px;
+    margin: 15px 10px;
+}
+.changeBtn {
+    float: right;
+    margin-left: 15px;
+}
 
 </style>

@@ -98,3 +98,29 @@ export function updateProject(data) {
         data
     })
 }
+
+/**
+ * 邀请成员
+ * @param {*} data 
+ * @returns 
+ */
+export function invitationMember(data) {
+    return request({
+        url: '/api/project/invite',
+        method: 'post',
+        data
+    })
+}
+
+/**
+ * 移除用户
+ * @param {*} data 
+ * @returns 
+ */
+export function removeMember(data) {
+    return request({
+        url: '/api/project/removeMember',
+        method: 'delete',
+        data
+    })
+}

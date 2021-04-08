@@ -355,12 +355,11 @@ export default {
         testInterface() {
             this.responseIsLoading = true;
             interfaceTest(this.interfaceData).then(res => {
-                console.log(res);
+                // console.log(res);
                 this.response = res;
             }).catch(err => {
-                console.log(err);
+                // console.log(err);
                 this.response = err;
-                console.log(err.data);
             }).finally(() => {
                 this.responseIsShow = true;
                 this.responseIsLoading = false;
@@ -468,5 +467,15 @@ export default {
 .response-body-title {
     /* font-size: 15px; */
     margin-bottom: 15px;
+}
+.error-style {
+    background-color:#fef0f0;
+    padding: 10px;
+    border-radius:10px;
+}
+.success-style {
+    background-color: #f0f9eb;
+    padding: 10px;
+    border-radius: 10px;
 }
 </style>

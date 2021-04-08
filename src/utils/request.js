@@ -58,13 +58,13 @@ service.interceptors.response.use(
           return Promise.reject(error)
         }
       }
-      console.log(code)
+      // console.log(code)
       if (code) {
         if (code === 401) {
-          store.dispatch('LogOut').then(() => {
+          store.dispatch('Logout').then(() => {
             // 用户登录界面提示
             Cookies.set('point', 401)
-            location.reload()
+            // location.reload()
           })
         } else if (code === 403) {
           router.push({ path: '/401' })
