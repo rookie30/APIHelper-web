@@ -4,7 +4,7 @@ import Config from '@/settings'
 
 // create an axios instance
 const service = axios.create({
-  baseURL: '',
+  baseURL: process.env.VUE_APP_BASE_API,
   // withCredentials: true, // send cookies when cross-domain requests
   timeout: Config.timeout // request timeout
 })

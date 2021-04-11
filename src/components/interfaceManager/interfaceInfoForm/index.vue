@@ -159,7 +159,7 @@
                 <div v-show="responseIsShow">
                     <div class="response-body">
                         <span class="response-body-title title">Body</span>
-                        <pre v-text="response.data"></pre>
+                        <pre v-text="response"></pre>
                     </div>
                 </div>
                 <span 
@@ -353,13 +353,19 @@ export default {
          * 测试接口
          */
         testInterface() {
+            // console.log(this.interfaceData);
             this.responseIsLoading = true;
+            // 过滤参数列中全空的项
+            this.interfaceData.params = this.checkNull(this.interfaceData.params);
+            this.interfaceData.headers = this.checkNull(this.interfaceData.headers);
+            this.interfaceData.body.content = this.checkNull(this.interfaceData.body.content);
             interfaceTest(this.interfaceData).then(res => {
-                // console.log(res);
-                this.response = res;
+                console.log(res);
+                this.response = JSON.parse(res.data.data);
             }).catch(err => {
-                // console.log(err);
-                this.response = err;
+                console.log(err);
+                // console.log(JSON.parse(err.data.data));
+                this.response = JSON.parse(err.data.data);
             }).finally(() => {
                 this.responseIsShow = true;
                 this.responseIsLoading = false;

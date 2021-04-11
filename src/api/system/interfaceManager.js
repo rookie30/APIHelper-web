@@ -65,20 +65,29 @@ export function getInterfaceLog(params) {
     })
 }
 
+/**
+ * 手动测试
+ * @param {*} data 
+ * @returns 
+ */
 export function interfaceTest(data) {
-    const requestType = data.requestType;
-    const requestUrl = data.requestUrl;
-    let params = handleParams(data.params);
-    // console.log(params);
-    let headers = handleHeaders(data.headers);
-    let body = handleBody(data.body.content);
     return testRequest({
-        url: requestUrl,
-        method: requestType,
-        params: params,
-        data: body,
-        headers: headers        
-    });
+        url: '/api/interface/manualTest',
+        method: 'post',
+        data
+    })
+}
+
+/**
+ * 自动测试
+ * @param {*} data 
+ */
+export function interfaceAutoTest(data) {
+    return testRequest({
+        url: '/api/interface/autoTest',
+        method: 'post',
+        data
+    })    
 }
 
 /**

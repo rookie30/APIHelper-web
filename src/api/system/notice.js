@@ -35,4 +35,3 @@ export function setReadNotice(data) {
         data
     })
 }
-

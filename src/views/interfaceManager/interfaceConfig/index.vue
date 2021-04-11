@@ -70,17 +70,65 @@
                         <el-button
                             circle
                             icon="el-icon-copy-document"
-                            size="mini">
+                            size="mini"
+                            @click="autoTest(scope.row)">
                         </el-button>
                     </template>
                 </el-table-column>
             </el-table>
+            <!-- 开启自动测试提示dialog -->
+            <el-dialog
+                title="提示"
+                :visible.sync="testDialogVisible"
+                width="30%"
+                v-loading="testLoading">
+                <span>确定开始自动测试吗？</span>
+                <span slot="footer" class="dialog-footer">
+                    <el-button @click="testDialogVisible=false">取 消</el-button>
+                    <el-button type="primary" @click="handelAutoTest">确 定</el-button>
+                </span>
+            </el-dialog>
+            <!-- 测试结果显示dialog -->
+            <el-dialog
+                title="测试结果"
+                :visible.sync="resultDialogVisible">
+                <el-table 
+                    :data="testResult"
+                    height="250"
+                    border="">
+                    <el-table-column 
+                        label="编号" 
+                        width="60px"
+                        prop="index">
+                    </el-table-column>
+                    <el-table-column
+                        label="参数"
+                        prop="params">
+                        <template slot-scope="scope">
+                            <pre v-text="scope.row.params"></pre>
+                        </template>
+                    </el-table-column>
+                    <el-table-column
+                        label="测试结果"
+                        prop="result">
+                    </el-table-column>
+                    <el-table-column
+                        label="状态"
+                        fixed="right">
+                        <template slot-scope="scope">
+                            <el-tag :type="resultStatusHandler(scope.row.result)">
+                                {{ JSON.parse(scope.row.result).status }}
+                            </el-tag>
+                        </template>
+                    </el-table-column>
+                </el-table>
+            </el-dialog>
         </div>
     </div>
 </template>
 
 <script>
-import { getInterfaceInfo } from '@/api/system/interfaceManager';
+import { getInterfaceInfo, interfaceAutoTest } from '@/api/system/interfaceManager';
 
 
 export default {
@@ -89,6 +137,11 @@ export default {
             projectInfo: {}, // 当前选择的项目
             interfaceData: [], // 接口信息
             isLoading: false,
+            testDialogVisible: false,
+            currentInterface: {}, // 当前选中的接口信息
+            testResult: [], // 自动测试结果
+            resultDialogVisible: false,
+            testLoading: false
         }
     },
     methods: {
@@ -173,7 +226,48 @@ export default {
                 info: params
             }});
             // console.log(params);
+        },
+        /**
+         * 自动测试
+         */
+        autoTest(row) {
+            this.testDialogVisible = true;
+            // console.log(row);
+            this.currentInterface = row;
+        },
+        /**
+         * 自动测试handel事件
+         */
+        handelAutoTest() {
+            this.testLoading = true;
+            interfaceAutoTest(this.currentInterface).then(res => {
+                const result = JSON.stringify(res.data.data);
+                this.testResult = JSON.parse(result);
+                console.log(JSON.parse(result));
+                this.resultDialogVisible = true;
+                setTimeout(() => {
+                    this.resultDialogVisible = true;
+                }, 500);
+            }).catch(err => {
+                console.log(err);
+                this.$message.error('操作失败');
+            }).finally(() => {
+                this.testLoading = false;
+                this.testDialogVisible = false;
+            });
+        },
+        /**
+         * 测试结果类型处理器
+         */
+        resultStatusHandler(row) {
+            let status = JSON.parse(row).status;
+            if(status == 200 || status == 201) {
+                return "success";
+            } else {
+                return "danger";
+            }
         }
+        
     },
     created() {
         this.init();

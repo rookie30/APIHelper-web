@@ -34,6 +34,7 @@ const user = {
       const rememberMe = userInfo.rememberMe
         return new Promise((resolve, reject) => {
           login(userInfo).then(res => {
+            // console.log(res);
             setToken(res.token, rememberMe)
             commit('SET_TOKEN', res.token)
             commit('SET_USER', res.user.user)
