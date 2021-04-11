@@ -103,18 +103,24 @@
                     </el-table-column>
                     <el-table-column
                         label="参数"
-                        prop="params">
+                        prop="params"
+                        wdith="150px">
                         <template slot-scope="scope">
                             <pre v-text="scope.row.params"></pre>
                         </template>
                     </el-table-column>
                     <el-table-column
-                        label="测试结果"
-                        prop="result">
+                        label="测试结果">
+                        <template slot-scope="scope">
+                            <pre v-text="JSON.parse(scope.row.result)">
+                                
+                            </pre>
+                        </template>
                     </el-table-column>
                     <el-table-column
                         label="状态"
-                        fixed="right">
+                        fixed="right"
+                        width="80px">
                         <template slot-scope="scope">
                             <el-tag :type="resultStatusHandler(scope.row.result)">
                                 {{ JSON.parse(scope.row.result).status }}
