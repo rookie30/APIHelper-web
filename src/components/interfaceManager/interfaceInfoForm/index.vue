@@ -262,6 +262,7 @@ export default {
          * 更新接口
          */
         updateInterfaceHandler() {
+            console.log(this.interfaceData);
             updateInterface(this.interfaceData).then(res => {
                 if(res.status == '200') {
                     this.$message.success('更新成功');

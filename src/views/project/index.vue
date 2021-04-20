@@ -254,6 +254,7 @@ export default {
          * 换页
          */
         handleCurrentChange() {
+            this.isLoading = true;
             const infoPromise = this.getInfo();
             infoPromise.then(res => {
                 if(res.status == '200') {
@@ -265,7 +266,9 @@ export default {
             }).catch(err => {
                 console.log(err);
                 throw new Error('获取信息失败');
-            })
+            }).finally(() => {
+                this.isLoading = false;
+            });
         },
         /**
          * 项目编辑

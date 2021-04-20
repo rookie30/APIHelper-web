@@ -99,9 +99,23 @@ export default {
          */
         splitTitle() {
             this.logData.forEach(item => {
-                const title = item.content.split(' ')[0] + ' ' +  
-                        item.content.split(' ')[4];
-                item.title = title;
+                // const title = item.content.split(' ')[0] + ' ' +  
+                //         item.content.split(' ')[4];
+                // item.title = title;
+                switch (item.type) {
+                    case 'update' :
+                        item.title = item.operator + " 更新了项目";
+                        break;
+                    case 'create':
+                        item.title = item.operator + " 创建了项目";
+                        break;
+                    case 'invite':
+                        item.title = "成员邀请";
+                        break;
+                    case 'remove':
+                        item.title = "成员移除";
+                        break;
+                } 
             });
         },
         

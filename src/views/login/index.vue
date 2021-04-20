@@ -53,8 +53,8 @@ export default {
       codeUrl: '',
       cookiePass: '',
       loginForm: {
-        username: 'admin',
-        password: '12345',
+        username: '',
+        password: '',
         rememberMe: false,
         code: '', // 验证码
         uuid: ''
@@ -132,7 +132,7 @@ export default {
           }
           this.$store.dispatch('Login', user).then(() => {
             this.loading = false
-            this.$router.push({ path: this.redirect || '/' })
+            this.$router.push({ path: '/' })
           }).catch(() => {
             this.loading = false
             // this.$message.error('用户名或密码错误');

@@ -156,13 +156,9 @@
 
 <script>
 import { getMemberInfo, invitationMember, updateProject, removeMember } from '@/api/system/project';
-import CreateGroupForm from '@/components/projectManager/createGroupForm'; 
 
 export default {
     name: 'ProjectEdit',
-    components: {
-        CreateGroupForm,
-    },
     filters: {
         genderFilter(gender) {
             const genderMap = {

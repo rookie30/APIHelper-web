@@ -48,32 +48,6 @@ export function getMemberInfo(params) {
 }
 
 /**
- * 获取项目组信息
- * @param {*} params 
- */
-export function getGroupInfo(params) {
-    return request({
-        url: '/api/project/getGroupInfo',
-        method: 'get',
-        params
-    })
-}
-
-/**
- * 创建小组
- * @param {*} data 
- * @returns 
- */
-export function createGroup(data) {
-    return request({
-        url: '/api/project/createGroup',
-        method: 'post',
-        data
-    })
-}
-
-
-/**
  * 获取项目日志
  * @param {*} params 
  * @returns 

@@ -46,7 +46,7 @@
             {{ showingMsgItem.createTime }}
           </time>
         </div>
-        <div v-html="messageContent"></div>
+        <div v-html="messageContent" class="message-view-content"></div>
       </div>
     </div>
   </el-card>
@@ -200,5 +200,12 @@ export default {
     display: block;
     height: 50px;
     font-size: 13px
+}
+.message-view-con {
+  margin: 10px 20px;
+}
+.message-view-content {
+  margin: 10px 0;
+  font-size: 18px;
 }
 </style>

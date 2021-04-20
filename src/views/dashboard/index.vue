@@ -1,39 +1,39 @@
 <template>
   <div class="dashboard-container">
-    <!-- <div class="dashboard-text">name: {{ this.user.username }}</div> -->
+    <div class="content">
+      欢迎使用APIHelper
+    </div>
   </div>
 </template>
 
 <script>
-import { mapGetters, mapState } from 'vuex'
-import { getInfo } from '@/api/system/user'
 
 export default {
   name: 'Dashboard',
   data() {
     return {
       user: {
-        // username: "admin",
       }
     }
   },
   methods: {
   },
   created() {
-    // this.getUserInfo();
 
   }
 }
 </script>
 
-<style lang="scss" scoped>
-.dashboard {
-  &-container {
-    margin: 30px;
-  }
-  &-text {
-    font-size: 30px;
-    line-height: 46px;
-  }
+<style scoped>
+.dashboard-container {
+  margin: 0 auto;
+  padding: 0;
+}
+.content {
+  position: absolute;
+  top: 45%;
+  left: 45%;
+  color: lightgray;
+
 }
 </style>

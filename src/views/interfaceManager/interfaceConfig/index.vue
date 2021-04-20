@@ -95,7 +95,7 @@
                 <el-table 
                     :data="testResult"
                     height="250"
-                    border="">
+                    border>
                     <el-table-column 
                         label="编号" 
                         width="60px"

@@ -82,7 +82,7 @@ export default {
      */
     getUnreadCount() {
       getUnreadNoticeCount().then(res => {
-        console.log(res);
+        // console.log(res);
         if(res.status == 200) {
           this.unReadNoticeCount = res.count;
           this.checkBadgeIsHidden(res.count);
